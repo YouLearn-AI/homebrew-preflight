@@ -12,7 +12,6 @@ class Preflight < Formula
   depends_on "trycua/cua/cua-driver"
   depends_on "ffmpeg"
   depends_on "tesseract" => :optional
-  depends_on cask: "blackhole-2ch"
 
   def install
     system "pnpm", "install", "--frozen-lockfile=false"
@@ -27,6 +26,14 @@ class Preflight < Formula
 
   def caveats
     <<~EOS
+      preflight needs ONE additional non-formula dependency:
+
+        brew install --cask blackhole-2ch
+
+      (BlackHole 2ch is the virtual mic device. Casks can't be declared
+      as formula deps — install separately. After install, you may need
+      to log out + back in for CoreAudio to register the device.)
+
       preflight needs macOS Privacy & Security permissions:
         Accessibility, Input Monitoring, Screen Recording, Microphone
 
