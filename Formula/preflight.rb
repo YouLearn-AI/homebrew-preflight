@@ -1,8 +1,9 @@
 class Preflight < Formula
   desc "End-to-end QA testing for shipped Electron desktop apps"
   homepage "https://github.com/YouLearn-AI/preflight"
-  url "https://github.com/YouLearn-AI/preflight/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "ef0f1993597c6c2d70b558d2c45862b2201bedea4db42c5b46104ceaed58b6c3"
+  url "https://github.com/YouLearn-AI/preflight.git",
+      using: :git,
+      tag:   "v0.1.0"
   license "MIT"
   version "0.1.0"
 
