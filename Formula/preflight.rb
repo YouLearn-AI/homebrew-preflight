@@ -3,9 +3,9 @@ class Preflight < Formula
   homepage "https://github.com/YouLearn-AI/preflight"
   url "https://github.com/YouLearn-AI/preflight.git",
       using: :git,
-      tag:   "v0.1.0"
+      tag:   "v0.1.1"
   license "MIT"
-  version "0.1.0"
+  version "0.1.1"
 
   depends_on "node"
   depends_on "pnpm"
