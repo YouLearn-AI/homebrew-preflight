@@ -8,8 +8,6 @@ class Preflight < Formula
 
   depends_on "node"
   depends_on "pnpm"
-  depends_on "youlearn-ai/audiokit/audiokit"
-  depends_on "trycua/cua/cua-driver"
   depends_on "ffmpeg"
   depends_on "tesseract" => :optional
 
@@ -26,13 +24,20 @@ class Preflight < Formula
 
   def caveats
     <<~EOS
-      preflight needs ONE additional non-formula dependency:
+      preflight needs THREE additional non-formula dependencies (no Homebrew tap):
 
+        # 1. audiokit (audio injection CLI — node script via npm link)
+        git clone https://github.com/YouLearn-AI/audiokit.git ~/Projects/audiokit
+        cd ~/Projects/audiokit && npm install && npm link
+
+        # 2. cua-driver (macOS Accessibility daemon — Mach-O bundle in /Applications)
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh)"
+
+        # 3. blackhole-2ch (CoreAudio virtual mic device — Homebrew cask)
         brew install --cask blackhole-2ch
 
-      (BlackHole 2ch is the virtual mic device. Casks can't be declared
-      as formula deps — install separately. After install, you may need
-      to log out + back in for CoreAudio to register the device.)
+      After blackhole-2ch installs, you may need to log out + back in
+      for CoreAudio to register the new virtual device.
 
       preflight needs macOS Privacy & Security permissions:
         Accessibility, Input Monitoring, Screen Recording, Microphone
