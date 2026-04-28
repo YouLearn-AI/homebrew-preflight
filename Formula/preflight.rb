@@ -44,7 +44,7 @@ class Preflight < Formula
   depends_on "tesseract" => :optional
 
   def install
-    libexec.install Dir["libexec/preflight/*"] if Dir.exist?("libexec/preflight")
+    (libexec/"preflight").install Dir["libexec/preflight/*"] if Dir.exist?("libexec/preflight")
     bin.install "bin/preflight"
     bin.install "bin/preflight-brain" if File.exist?("bin/preflight-brain")
     (pkgshare/"journeys").install Dir["share/preflight/journeys/*"] if Dir.exist?("share/preflight/journeys")
