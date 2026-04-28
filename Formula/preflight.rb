@@ -1,3 +1,29 @@
+require "download_strategy"
+
+# Custom strategy: download release assets from a private GitHub repo using
+# the user's HOMEBREW_GITHUB_API_TOKEN. Hits api.github.com with the asset
+# id, requesting Accept: application/octet-stream — GitHub redirects to a
+# pre-signed CDN URL we can fetch with curl.
+#
+# Set the token before installing:
+#   export HOMEBREW_GITHUB_API_TOKEN=$(gh auth token)
+#   brew install youlearn-ai/preflight/preflight
+class GitHubPrivateAssetStrategy < CurlDownloadStrategy
+  def _fetch(url:, resolved_url:, timeout:)
+    token = ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", nil)
+    raise CurlDownloadStrategyError.new(url, "HOMEBREW_GITHUB_API_TOKEN is not set. Run: export HOMEBREW_GITHUB_API_TOKEN=$(gh auth token)") if token.nil? || token.empty?
+
+    curl_download(
+      "--header", "Accept: application/octet-stream",
+      "--header", "Authorization: Bearer #{token}",
+      "--location",
+      url,
+      to: temporary_path,
+      timeout: timeout,
+    )
+  end
+end
+
 class Preflight < Formula
   desc "End-to-end QA testing for shipped Electron desktop apps"
   homepage "https://github.com/YouLearn-AI/preflight"
@@ -6,7 +32,8 @@ class Preflight < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/YouLearn-AI/preflight/releases/download/v0.2.1/preflight-0.2.1-darwin-arm64.tar.gz"
+      url "https://api.github.com/repos/YouLearn-AI/preflight/releases/assets/407609306",
+          using: GitHubPrivateAssetStrategy
       sha256 "71be2374681babbf0a39be45880e891f19455a397d87a7ba58dd83a171320232"
     end
   end
@@ -34,12 +61,14 @@ class Preflight < Formula
 
       Doctor handles audiokit (clones github.com/YouLearn-AI/audiokit + npm link)
       and cua-driver (upstream installer from github.com/trycua/cua), and
-      opens System Settings panes for the Privacy permissions:
+      opens System Settings panes for Privacy permissions:
       Accessibility, Input Monitoring, Screen Recording, Microphone.
 
       After granting, fully QUIT and RELAUNCH your terminal.
 
-      Required env:
+      Required env (formula uses HOMEBREW_GITHUB_API_TOKEN to fetch from
+      the private release; export it before brew install/upgrade):
+        export HOMEBREW_GITHUB_API_TOKEN=$(gh auth token)
         OPENAI_API_KEY  https://platform.openai.com/api-keys
         GEMINI_API_KEY  https://aistudio.google.com/apikey (recommended)
 
