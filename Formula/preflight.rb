@@ -7,7 +7,7 @@ class Preflight < Formula
   on_macos do
     on_arm do
       url "https://github.com/YouLearn-AI/preflight/releases/download/v0.2.1/preflight-0.2.1-darwin-arm64.tar.gz"
-      sha256 ""
+      sha256 "71be2374681babbf0a39be45880e891f19455a397d87a7ba58dd83a171320232"
     end
   end
 
