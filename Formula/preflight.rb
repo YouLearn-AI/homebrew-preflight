@@ -19,20 +19,26 @@ class Preflight < Formula
     system "pnpm", "build"
     libexec.install Dir["*"]
 
-    # 2. Set up a Python venv inside libexec for the workflow brain's
-    #    runtime deps. PEP 668 blocks system-Python pip installs on newer
-    #    macOS, so a sealed venv is the right answer. websockets =>
-    #    CDP transport. pyyaml => workflow .md front-matter parsing
+    # 2. Install the workflow brain's Python runtime deps into a flat dir
+    #    via `pip install --target`. Skips venv creation (which ran ensurepip
+    #    and failed in brew's install sandbox on Tier 2 configs); pip is
+    #    already in the brewed python's site-packages so no bootstrap needed.
+    #    websockets => CDP transport. pyyaml => workflow .md front-matter
     #    (the brain has a fallback parser, but yaml is more robust).
-    #    openai => LLM tool-call dispatcher.
+    #    openai => LLM tool-call dispatcher (skip-able if the user runs the
+    #    brain via codex CLI; brain's import is guarded).
     python = Formula["python@3.12"].opt_bin/"python3.12"
-    venv_dir = libexec/"venv"
-    system python, "-m", "venv", venv_dir
-    system venv_dir/"bin/pip", "install", "--quiet",
+    pylib = libexec/"pylib"
+    pylib.mkpath
+    system python, "-m", "pip", "install",
+           "--target=#{pylib}",
+           "--quiet",
+           "--no-warn-script-location",
+           "--disable-pip-version-check",
            "websockets", "pyyaml", "openai"
 
-    # 3. Wrapper script: PATH-prepends the venv so the brain script picks
-    #    up its deps; resolves through the Homebrew prefix symlink.
+    # 3. Wrapper script: prepends the pylib dir to PYTHONPATH so the brain
+    #    finds its deps; resolves through the Homebrew prefix symlink.
     (bin/"preflight").write <<~SH
       #!/usr/bin/env bash
       src="${BASH_SOURCE[0]}"
@@ -41,7 +47,8 @@ class Preflight < Formula
         src="$(readlink "$src")"
         case "$src" in /*) ;; *) src="$d/$src" ;; esac
       done
-      export PATH="#{venv_dir}/bin:$PATH"
+      export PYTHONPATH="#{pylib}${PYTHONPATH:+:$PYTHONPATH}"
+      export PATH="#{Formula["python@3.12"].opt_bin}:$PATH"
       exec "#{Formula["node"].opt_bin}/node" "#{libexec}/packages/cli/dist/preflight.js" "$@"
     SH
     (bin/"preflight").chmod 0755
