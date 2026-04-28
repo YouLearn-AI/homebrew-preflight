@@ -27,14 +27,14 @@ end
 class Preflight < Formula
   desc "End-to-end QA testing for shipped Electron desktop apps"
   homepage "https://github.com/YouLearn-AI/preflight"
-  version "0.2.4"
+  version "0.2.5"
   license :cannot_represent
 
   on_macos do
     on_arm do
-      url "https://api.github.com/repos/YouLearn-AI/preflight/releases/assets/407632265",
+      url "https://api.github.com/repos/YouLearn-AI/preflight/releases/assets/407662324",
           using: GitHubPrivateAssetStrategy
-      sha256 "7826af34b562687d65c636bfcd83a62fba084a8931a32411410897f59b63c1f7"
+      sha256 "397f52db1fbaa4217ceadbbccd52bad663c687529e5002a0dded7e1df5262e65"
     end
   end
 
