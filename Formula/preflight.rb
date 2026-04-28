@@ -14,7 +14,6 @@ class Preflight < Formula
   depends_on :macos
   depends_on arch: :arm64
   depends_on "ffmpeg"
-  depends_on cask: "blackhole-2ch"
   depends_on "tesseract" => :optional
 
   def install
@@ -28,11 +27,12 @@ class Preflight < Formula
 
   def caveats
     <<~CAV
-      Two more deps need installing — they have no Homebrew tap:
+      Three more deps need installing (no Homebrew tap, or cask):
 
+        brew install --cask blackhole-2ch
         preflight doctor --install-missing
 
-      handles audiokit (clones github.com/YouLearn-AI/audiokit + npm link)
+      Doctor handles audiokit (clones github.com/YouLearn-AI/audiokit + npm link)
       and cua-driver (upstream installer from github.com/trycua/cua), and
       opens System Settings panes for the Privacy permissions:
       Accessibility, Input Monitoring, Screen Recording, Microphone.
