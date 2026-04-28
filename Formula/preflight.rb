@@ -3,8 +3,8 @@ class Preflight < Formula
   homepage "https://github.com/YouLearn-AI/preflight"
   url "https://github.com/YouLearn-AI/preflight.git",
       using:    :git,
-      tag:      "v0.1.3",
-      revision: "b4b4d10ca63887721683c472f3c2d732243de042"
+      tag:      "v0.2.0",
+      revision: "4a3586f1a7f54edb6070b67a907991ddf81cd7e6"
   license :cannot_represent
 
   depends_on "ffmpeg"
