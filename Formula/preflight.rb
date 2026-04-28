@@ -2,14 +2,14 @@ class Preflight < Formula
   desc "End-to-end QA testing for shipped Electron desktop apps"
   homepage "https://github.com/YouLearn-AI/preflight"
   url "https://github.com/YouLearn-AI/preflight.git",
-      using: :git,
-      tag:   "v0.1.3"
+      using:    :git,
+      tag:      "v0.1.3",
+      revision: "b4b4d10ca63887721683c472f3c2d732243de042"
   license :cannot_represent
-  version "0.1.3"
 
+  depends_on "ffmpeg"
   depends_on "node"
   depends_on "pnpm"
-  depends_on "ffmpeg"
   depends_on "python@3.12"
   depends_on "tesseract" => :optional
 
