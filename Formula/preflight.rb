@@ -3,21 +3,45 @@ class Preflight < Formula
   homepage "https://github.com/YouLearn-AI/preflight"
   url "https://github.com/YouLearn-AI/preflight.git",
       using: :git,
-      tag:   "v0.1.2"
-  license "MIT"
-  version "0.1.2"
+      tag:   "v0.1.3"
+  license :cannot_represent
+  version "0.1.3"
 
   depends_on "node"
   depends_on "pnpm"
   depends_on "ffmpeg"
+  depends_on "python@3.12"
   depends_on "tesseract" => :optional
 
   def install
+    # 1. Build the Node CLI from source.
     system "pnpm", "install", "--frozen-lockfile=false"
     system "pnpm", "build"
     libexec.install Dir["*"]
+
+    # 2. Set up a Python venv inside libexec for the workflow brain's
+    #    runtime deps. PEP 668 blocks system-Python pip installs on newer
+    #    macOS, so a sealed venv is the right answer. websockets =>
+    #    CDP transport. pyyaml => workflow .md front-matter parsing
+    #    (the brain has a fallback parser, but yaml is more robust).
+    #    openai => LLM tool-call dispatcher.
+    python = Formula["python@3.12"].opt_bin/"python3.12"
+    venv_dir = libexec/"venv"
+    system python, "-m", "venv", venv_dir
+    system venv_dir/"bin/pip", "install", "--quiet",
+           "websockets", "pyyaml", "openai"
+
+    # 3. Wrapper script: PATH-prepends the venv so the brain script picks
+    #    up its deps; resolves through the Homebrew prefix symlink.
     (bin/"preflight").write <<~SH
       #!/usr/bin/env bash
+      src="${BASH_SOURCE[0]}"
+      while [ -L "$src" ]; do
+        d="$(cd -P "$(dirname "$src")" && pwd)"
+        src="$(readlink "$src")"
+        case "$src" in /*) ;; *) src="$d/$src" ;; esac
+      done
+      export PATH="#{venv_dir}/bin:$PATH"
       exec "#{Formula["node"].opt_bin}/node" "#{libexec}/packages/cli/dist/preflight.js" "$@"
     SH
     (bin/"preflight").chmod 0755
@@ -25,33 +49,47 @@ class Preflight < Formula
 
   def caveats
     <<~EOS
-      preflight needs THREE additional non-formula dependencies (no Homebrew tap):
+      preflight needs three additional non-formula dependencies (no Homebrew
+      tap exists for them):
 
-        # 1. audiokit (audio injection CLI — node script via npm link)
-        git clone https://github.com/YouLearn-AI/audiokit.git ~/Projects/audiokit
-        cd ~/Projects/audiokit && npm install && npm link
+        # 1. audiokit — public Node CLI for audio injection
+        git clone https://github.com/YouLearn-AI/audiokit.git ~/.local/share/preflight/audiokit
+        ( cd ~/.local/share/preflight/audiokit && npm install && npm link )
 
-        # 2. cua-driver (macOS Accessibility daemon — Mach-O bundle in /Applications)
+        # 2. cua-driver — public Swift Accessibility daemon
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh)"
 
-        # 3. blackhole-2ch (CoreAudio virtual mic device — Homebrew cask)
+        # 3. blackhole-2ch — CoreAudio virtual mic device (cask)
         brew install --cask blackhole-2ch
 
-      After blackhole-2ch installs, you may need to log out + back in
-      for CoreAudio to register the new virtual device.
+      After blackhole-2ch installs, you may need to log out + back in so
+      CoreAudio picks up the new virtual device.
 
-      preflight needs macOS Privacy & Security permissions:
-        Accessibility, Input Monitoring, Screen Recording, Microphone
+      macOS Privacy & Security panes — grant your terminal + CuaDriver.app:
+        Accessibility · Input Monitoring · Screen Recording · Microphone
 
-      Run `preflight doctor --install-missing` to verify deps and
-      open the Privacy panes for permission grants.
+      After granting, fully QUIT and RELAUNCH your terminal — TCC grants
+      attach at process launch, not when toggled.
 
-      After granting, fully QUIT and RELAUNCH your terminal —
-      TCC grants attach at process launch.
+      Required env:
+        OPENAI_API_KEY  workflow brain (https://platform.openai.com/api-keys)
+                        OR be logged into Codex CLI for --brain codex
+        GEMINI_API_KEY  vision self-heal, recommended
+                        (https://aistudio.google.com/apikey)
+
+      First runs:
+        preflight doctor                     # health check
+        preflight workflow smoke             # ~30-60s liveness check
+        preflight workflow jonah-customer-video --auto-loop 2
+                                             # full customer walkthrough
+        preflight workflow full-ui-matrix --auto-loop 2
+                                             # exhaustive UI matrix
+
+      Upgrade later with: preflight update    # auto-detects brew install
     EOS
   end
 
   test do
-    assert_match "preflight", shell_output("#{bin}/preflight --version")
+    assert_match version.to_s, shell_output("#{bin}/preflight --version")
   end
 end
