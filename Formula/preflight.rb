@@ -4,7 +4,7 @@ class Preflight < Formula
   url "https://github.com/YouLearn-AI/preflight.git",
       using:    :git,
       tag:      "v0.2.0",
-      revision: "4a3586f1a7f54edb6070b67a907991ddf81cd7e6"
+      revision: "665d81a864314c95f8ba677cf7b7fed2ecbbc95e"
   license :cannot_represent
 
   depends_on "ffmpeg"
