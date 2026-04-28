@@ -27,14 +27,14 @@ end
 class Preflight < Formula
   desc "End-to-end QA testing for shipped Electron desktop apps"
   homepage "https://github.com/YouLearn-AI/preflight"
-  version "0.2.1"
+  version "0.2.2"
   license :cannot_represent
 
   on_macos do
     on_arm do
-      url "https://api.github.com/repos/YouLearn-AI/preflight/releases/assets/407609306",
+      url "https://api.github.com/repos/YouLearn-AI/preflight/releases/assets/407616154",
           using: GitHubPrivateAssetStrategy
-      sha256 "71be2374681babbf0a39be45880e891f19455a397d87a7ba58dd83a171320232"
+      sha256 "a05094d9907b0b9cedef2e81de70ead9bc90279ca44c8876fe9b1354f10e2ca8"
     end
   end
 
@@ -44,6 +44,7 @@ class Preflight < Formula
   depends_on "tesseract" => :optional
 
   def install
+    libexec.install Dir["libexec/preflight/*"] if Dir.exist?("libexec/preflight")
     bin.install "bin/preflight"
     bin.install "bin/preflight-brain" if File.exist?("bin/preflight-brain")
     (pkgshare/"journeys").install Dir["share/preflight/journeys/*"] if Dir.exist?("share/preflight/journeys")
