@@ -7,7 +7,7 @@ require "download_strategy"
 #
 # Set the token before installing:
 #   export HOMEBREW_GITHUB_API_TOKEN=$(gh auth token)
-#   brew install youlearn-ai/preflight/preflight
+#   brew install youlearn-ai/preflight-mvp-prototype/preflight
 class GitHubPrivateAssetStrategy < CurlDownloadStrategy
   def _fetch(url:, resolved_url:, timeout:)
     token = ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", nil)
@@ -26,15 +26,15 @@ end
 
 class Preflight < Formula
   desc "End-to-end QA testing for shipped Electron desktop apps"
-  homepage "https://github.com/YouLearn-AI/preflight"
-  version "0.2.6"
+  homepage "https://github.com/YouLearn-AI/preflight-mvp-prototype"
+  version "0.2.8"
   license :cannot_represent
 
   on_macos do
     on_arm do
-      url "https://api.github.com/repos/YouLearn-AI/preflight/releases/assets/407693828",
+      url "https://api.github.com/repos/YouLearn-AI/preflight-mvp-prototype/releases/assets/407961453",
           using: GitHubPrivateAssetStrategy
-      sha256 "58da001517ebfc119af8e04e3868e78fbab78abf9c841947390ec40760fce89e"
+      sha256 "6cf89ff822edb29a0914f18384a6f27f957fe79fb430c5fc37c86307c53ffe2c"
     end
   end
 
